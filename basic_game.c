@@ -28,10 +28,13 @@ char const * WINDOW_TITLE = "Basic Game";
 WNDCLASS window_class = {0};
 HWND window_handler = NULL;
 
+
+
 // ----------------------
 // PROCEDURE DECLARATIONS
 // ----------------------
 void main();
+
 void main_init();
 void main_loop();
 void main_exit();
@@ -43,9 +46,9 @@ void window_register_class();
 void window_create_handler();
 void window_show();
 
+LRESULT CALLBACK class_window_procedure(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 
-LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 // ----------------------
 // PROCEDURE DEFINITIONS
@@ -93,7 +96,7 @@ void init_other()
 
 void window_register_class()
 {
-    window_class.lpfnWndProc = WindowProc;
+    window_class.lpfnWndProc = class_window_procedure;
     window_class.hInstance = GetModuleHandle(NULL);
     window_class.lpszClassName = WINDOW_CLASS_NAME;
 
@@ -128,9 +131,7 @@ void window_show()
     ShowWindow(window_handler, SW_SHOWNORMAL);
 }
 
-
-
-LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK class_window_procedure(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     switch (uMsg)
     {
