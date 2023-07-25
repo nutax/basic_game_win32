@@ -16,6 +16,7 @@
 #define MAIN_LOOP_DURATION 32
 char const *WINDOW_CLASS_NAME = "MyWindowClass";
 char const *WINDOW_TITLE = "Basic Game";
+RECT const FULL_WINDOW_RECT = {0, 0, WINDOW_WIDTH, WINDOW_HEIGHT};
 
 // ----------------------
 // VARIABLES
@@ -25,6 +26,18 @@ HWND window_handler = NULL;
 MSG msg = {0};
 DWORD start_tick;
 BOOL loop_should_continue = TRUE;
+DEVMODE display_settings;
+HDC main_graphic_handler = NULL;
+HDC secondary_graphic_handler = NULL;
+HBITMAP secondary_bitmap = NULL;
+HBITMAP old_bitmap = NULL;
+HPEN red_pen = NULL;
+HPEN green_pen = NULL;
+HPEN blue_pen = NULL;
+HPEN white_pen = NULL;
+HPEN black_pen = NULL;
+HBRUSH black_brush = NULL;
+HBRUSH white_brush = NULL;
 
 // ----------------------
 // PROCEDURE DECLARATIONS
@@ -36,10 +49,16 @@ void main_loop();
 void main_exit();
 
 void init_window();
-void init_other();
+void init_display_settings();
+void init_graphic_handlers();
+void init_colors();
 
 void loop_capture_start_tick();
 void loop_manage_window_messages();
+void loop_clear_back_buffer();
+void loop_update_entities();
+void loop_render_entities();
+void loop_swap_buffers();
 void loop_wait_remaining_time();
 
 void window_register_class();
@@ -62,7 +81,9 @@ void main()
 void main_init()
 {
     init_window();
-    init_other();
+    init_display_settings();
+    init_graphic_handlers();
+    init_colors();
 }
 
 void main_loop()
@@ -71,6 +92,10 @@ void main_loop()
     {
         loop_capture_start_tick();
         loop_manage_window_messages();
+        loop_clear_back_buffer();
+        loop_update_entities();
+        loop_render_entities();
+        loop_swap_buffers();
         loop_wait_remaining_time();
     }
 }
@@ -87,8 +112,34 @@ void init_window()
     window_show();
 }
 
-void init_other()
+void init_display_settings()
 {
+    ZeroMemory(&display_settings, sizeof(display_settings));
+    display_settings.dmSize = sizeof(display_settings);
+    display_settings.dmPelsWidth = WINDOW_WIDTH;
+    display_settings.dmPelsHeight = WINDOW_HEIGHT;
+    display_settings.dmBitsPerPel = 16;
+    display_settings.dmFields = DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT;
+    ChangeDisplaySettings(&display_settings, CDS_FULLSCREEN);
+}
+
+void init_graphic_handlers()
+{
+    main_graphic_handler = GetDC(window_handler);
+    secondary_graphic_handler = CreateCompatibleDC(main_graphic_handler);
+    secondary_bitmap = CreateCompatibleBitmap(main_graphic_handler, WINDOW_WIDTH, WINDOW_HEIGHT);
+    old_bitmap = SelectObject(secondary_graphic_handler, secondary_bitmap);
+}
+
+void init_colors()
+{
+    red_pen = CreatePen(PS_SOLID, 2, RGB(255, 0, 0));
+    green_pen = CreatePen(PS_SOLID, 2, RGB(0, 255, 0));
+    blue_pen = CreatePen(PS_SOLID, 2, RGB(0, 0, 255));
+    white_pen = CreatePen(PS_SOLID, 2, RGB(255, 255, 255));
+    black_pen = CreatePen(PS_SOLID, 2, RGB(0, 0, 0));
+    black_brush = CreateSolidBrush(RGB(0, 0, 0));
+    white_brush = CreateSolidBrush(RGB(255, 255, 255));
 }
 
 void loop_capture_start_tick()
@@ -107,6 +158,26 @@ void loop_manage_window_messages()
         TranslateMessage(&msg);
         DispatchMessage(&msg);
     }
+}
+
+void loop_clear_back_buffer()
+{
+    FillRect(secondary_graphic_handler, &FULL_WINDOW_RECT, black_brush);
+}
+
+void loop_update_entities()
+{
+    // TODO
+}
+
+void loop_render_entities()
+{
+    // TODO
+}
+
+void loop_swap_buffers()
+{
+    BitBlt(main_graphic_handler, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, secondary_graphic_handler, 0, 0, SRCCOPY);
 }
 
 void loop_wait_remaining_time()
